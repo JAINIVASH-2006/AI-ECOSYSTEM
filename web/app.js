@@ -465,13 +465,36 @@ function renderMap() {
 function initLeafletMap(data) {
   if (leafletMap) { leafletMap.remove(); leafletMap = null; }
 
-  leafletMap = L.map('leaflet-map', { center: [22.0, 79.0], zoom: 5, zoomControl: true });
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors, © CartoDB',
-    subdomains: 'abcd',
+  // Base tile layers (100% Free - No API Key Required)
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
-  }).addTo(leafletMap);
+  });
+
+  const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    maxZoom: 18,
+  });
+
+  const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)',
+    maxZoom: 17,
+  });
+
+  leafletMap = L.map('leaflet-map', {
+    center: [22.0, 79.0],
+    zoom: 5,
+    zoomControl: true,
+    layers: [osmLayer],
+  });
+
+  // Add Layer Control for seamless Map/Satellite/Topo toggling
+  const baseMaps = {
+    "🗺️ Standard Map": osmLayer,
+    "🛰️ Satellite Imagery": satelliteLayer,
+    "⛰️ Topographic Terrain": topoLayer,
+  };
+  L.control.layers(baseMaps).addTo(leafletMap);
 
   mapMarkers = L.layerGroup().addTo(leafletMap);
   renderMapMarkers(data);
