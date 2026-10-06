@@ -16,7 +16,11 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from config.thresholds import PRIORITY_THRESHOLDS, PRIORITY_WEIGHTS
+from config.thresholds import (
+    INTERVENTION_TYPES,
+    PRIORITY_THRESHOLDS,
+    PRIORITY_WEIGHTS,
+)
 from src.data_loader import (
     generate_sample_dataset,
     validate_columns,
@@ -167,13 +171,15 @@ class TestPriorityScoring:
         assert abs(total - 1.0) < 0.01
 
     @pytest.mark.parametrize("score,expected_class", [
-        (0, "LOW"),
-        (25, "LOW"),
-        (26, "MODERATE"),
-        (50, "MODERATE"),
-        (51, "HIGH"),
-        (75, "HIGH"),
-        (76, "CRITICAL"),
+        (0, "VERY_LOW"),
+        (20, "VERY_LOW"),
+        (21, "LOW"),
+        (40, "LOW"),
+        (41, "MODERATE"),
+        (60, "MODERATE"),
+        (61, "HIGH"),
+        (80, "HIGH"),
+        (81, "CRITICAL"),
         (100, "CRITICAL"),
     ])
     def test_classification_boundaries(self, score, expected_class):
@@ -191,7 +197,7 @@ class TestInterventionEngine:
     def test_returns_all_interventions(self, processed_df):
         zone = processed_df.iloc[0]
         results = compute_intervention_suitability(zone)
-        assert len(results) == 9  # 9 intervention types
+        assert len(results) == len(INTERVENTION_TYPES)
 
     def test_suitability_range(self, processed_df):
         zone = processed_df.iloc[0]
@@ -275,7 +281,7 @@ if __name__ == "__main__":
 
 
 def test_decimal_priority_boundaries():
-    scores = pd.Series([0, 25, 25.01, 50, 50.5, 75, 75.01, 100])
+    scores = pd.Series([0, 20, 20.01, 40, 40.5, 60, 60.5, 80, 80.5, 100])
     assert classify_priority(scores).tolist() == [
-        'LOW', 'LOW', 'MODERATE', 'MODERATE', 'HIGH', 'HIGH', 'CRITICAL', 'CRITICAL'
+        'VERY_LOW', 'VERY_LOW', 'LOW', 'LOW', 'MODERATE', 'MODERATE', 'HIGH', 'HIGH', 'CRITICAL', 'CRITICAL'
     ]
