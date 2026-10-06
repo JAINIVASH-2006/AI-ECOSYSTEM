@@ -78,6 +78,7 @@ function plotConfig() {
 // ─────────────────────────────────────────────────────────────
 let leafletMap = null;
 let mapMarkers = null;
+let dashboardMap = null;
 
 // ─────────────────────────────────────────────────────────────
 // NAVIGATION ROUTER
@@ -243,6 +244,21 @@ function renderDashboard() {
       </div>
     </div>
 
+    <!-- Live Interactive Leaflet Geospatial Overview -->
+    <div class="card mb-6" style="padding: 16px 20px">
+      <div class="flex-between mb-3">
+        <div>
+          <div class="section-title" style="margin-bottom:2px">🗺️ Live Geospatial Priority Map (Leaflet)</div>
+          <div class="text-secondary text-sm">Interactive nationwide spatial overview of ${total_zones} ecological restoration assessment zones.</div>
+        </div>
+        <div class="flex-row">
+          <span class="badge badge-critical">${class_counts.CRITICAL || 0} Critical Sites</span>
+          <button class="btn btn-secondary" style="padding:4px 12px;font-size:0.8rem" onclick="navigate('map')">Open Full GIS Workspace →</button>
+        </div>
+      </div>
+      <div id="dashboard-leaflet-map" style="height:380px;width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow-sm)"></div>
+    </div>
+
     <!-- Primary Charts Grid -->
     <div class="chart-grid">
       <div class="chart-card">
@@ -380,6 +396,67 @@ function renderDashboard() {
     textinfo: 'label+percent',
     textfont: { size: 11, color: '#fff' },
   }], { ...PLOTLY_LAYOUT, showlegend: false }, plotConfig());
+
+  // Initialize Live Leaflet Geospatial Overview on Dashboard
+  initDashboardMap(data);
+}
+
+function initDashboardMap(data) {
+  const mapEl = $('dashboard-leaflet-map');
+  if (!mapEl) return;
+
+  if (dashboardMap) {
+    dashboardMap.remove();
+    dashboardMap = null;
+  }
+
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  });
+
+  const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri',
+    maxZoom: 18,
+  });
+
+  dashboardMap = L.map('dashboard-leaflet-map', {
+    center: [22.0, 79.0],
+    zoom: 4.8,
+    layers: [osmLayer],
+  });
+
+  L.control.layers({
+    "🗺️ Standard Map": osmLayer,
+    "🛰️ Satellite Imagery": satLayer
+  }).addTo(dashboardMap);
+
+  const markers = L.layerGroup().addTo(dashboardMap);
+  for (const z of data) {
+    const col = priorityColor(z.priority_class);
+    const circle = L.circleMarker([z.latitude, z.longitude], {
+      radius: 4.5 + (z.priority_score / 22),
+      color: col,
+      fillColor: col,
+      fillOpacity: 0.82,
+      weight: 1.2,
+    });
+
+    circle.bindPopup(`
+      <div style="font-family:Inter,sans-serif;min-width:210px;font-size:0.85rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <strong style="color:#0f172a">${z.zone_id}</strong>
+          ${priorityBadge(z.priority_class)}
+        </div>
+        <div style="font-size:0.78rem;color:#64748b;margin-bottom:6px">${z.land_type} • Priority ${z.priority_score}/100</div>
+        <div style="font-size:0.78rem;margin-bottom:4px">❤️ <b>Health:</b> ${z.health_score}/100 | 🌱 <b>NDVI:</b> ${z.ndvi_mean}</div>
+        <div style="font-size:0.78rem;color:#dc2626;margin-bottom:8px">🚨 <b>Threat:</b> ${z.primary_threat}</div>
+        <button class="btn btn-primary" style="width:100%;padding:4px 8px;font-size:0.75rem" onclick="inspectZone('${z.zone_id}')">Inspect Full Analytics →</button>
+      </div>
+    `);
+
+    markers.addLayer(circle);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
