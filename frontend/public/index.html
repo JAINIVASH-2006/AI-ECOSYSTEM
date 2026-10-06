@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoRestore AI — Ecological Restoration Decision-Support Platform</title>
+  <meta name="description" content="AI-Powered Ecological Restoration Priority Mapping, Threat Detection, What-If Simulation, and Intervention Planning System." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ── Sidebar Navigation ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🌿</span>
+        <div>
+          <div class="logo-title">EcoRestore AI</div>
+          <div class="logo-version">Decision Support v2.0</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">🏠</span><span>Dashboard</span></button>
+      <button class="nav-item" data-page="map" onclick="navigate('map')"><span class="nav-icon">🗺️</span><span>Priority Map</span></button>
+      <button class="nav-item" data-page="analysis" onclick="navigate('analysis')"><span class="nav-icon">📊</span><span>Zone Analysis</span></button>
+      <button class="nav-item" data-page="biodiversity" onclick="navigate('biodiversity')"><span class="nav-icon">🐾</span><span>Biodiversity</span></button>
+      <button class="nav-item" data-page="interventions" onclick="navigate('interventions')"><span class="nav-icon">🌱</span><span>Interventions</span></button>
+      <button class="nav-item" data-page="simulation" onclick="navigate('simulation')"><span class="nav-icon">🔬</span><span>What-If Simulator</span></button>
+      <button class="nav-item" data-page="scenarios" onclick="navigate('scenarios')"><span class="nav-icon">⚖️</span><span>Scenario Comparison</span></button>
+      <button class="nav-item" data-page="budget" onclick="navigate('budget')"><span class="nav-icon">💰</span><span>Budget Planner</span></button>
+      <button class="nav-item" data-page="tracker" onclick="navigate('tracker')"><span class="nav-icon">📈</span><span>Progress Tracker</span></button>
+      <button class="nav-item" data-page="ai" onclick="navigate('ai')"><span class="nav-icon">🤖</span><span>AI & ML Evaluation</span></button>
+      <button class="nav-item" data-page="reports" onclick="navigate('reports')"><span class="nav-icon">📋</span><span>Reports</span></button>
+      <button class="nav-item" data-page="upload" onclick="navigate('upload')"><span class="nav-icon">📤</span><span>Data Upload</span></button>
+    </nav>
+    <div class="sidebar-footer">
+      <p>🌿 AI Decision-Support Platform<br><span style="color:#059669;font-weight:600">● Live Environment</span></p>
+    </div>
+  </aside>
+
+  <!-- ── Main Application Content ── -->
+  <main class="main-content" id="main-content">
+    <header class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation">☰</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="openWeatherModal()" style="padding:5px 12px;font-size:0.78rem" id="weather-api-btn">☁️ OpenWeather API</button>
+        <span class="data-badge" id="data-badge">No Data</span>
+        <button class="btn btn-primary" onclick="generateData()" id="gen-btn">⚡ Generate Dataset</button>
+      </div>
+    </header>
+
+    <!-- OpenWeather API Configuration Modal -->
+    <div id="weather-modal" class="loading-overlay hidden" style="background:rgba(15,23,42,0.6)">
+      <div class="card" style="max-width:480px;width:90%;margin:20px auto;box-shadow:var(--shadow-lg)">
+        <div class="flex-between mb-2">
+          <h3 style="font-size:1.15rem;font-weight:700">☁️ OpenWeather API Configuration</h3>
+          <button class="btn btn-secondary" style="padding:2px 8px" onclick="closeWeatherModal()">✕</button>
+        </div>
+        <p class="text-secondary text-sm mb-4">
+          Connect your free <strong>OpenWeatherMap API key</strong> to enrich zones with real-time temperature, precipitation (rainfall mm), humidity, and satellite atmospheric data.
+        </p>
+        <div class="form-group">
+          <label class="form-label">OpenWeather API Key (AppID)</label>
+          <input type="password" id="openweather-api-key-input" class="form-input" placeholder="e.g. 1a2b3c4d5e6f7g8h9i0j..." />
+          <small class="text-muted mt-2" style="display:block">
+            Don't have a key? Get one for free at <a href="https://home.openweathermap.org/api_keys" target="_blank" style="color:var(--accent);font-weight:600">openweathermap.org</a>.
+          </small>
+        </div>
+        <div id="weather-test-status" class="mb-4 text-sm" style="display:none"></div>
+        <div class="flex-row">
+          <button class="btn btn-secondary" onclick="testWeatherApiKey()">🧪 Test Connection</button>
+          <button class="btn btn-primary ml-auto" onclick="saveWeatherApiKey()">💾 Save API Key</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Containers -->
+    <section id="page-dashboard" class="page active"></section>
+    <section id="page-map" class="page"></section>
+    <section id="page-analysis" class="page"></section>
+    <section id="page-biodiversity" class="page"></section>
+    <section id="page-interventions" class="page"></section>
+    <section id="page-simulation" class="page"></section>
+    <section id="page-scenarios" class="page"></section>
+    <section id="page-budget" class="page"></section>
+    <section id="page-tracker" class="page"></section>
+    <section id="page-ai" class="page"></section>
+    <section id="page-reports" class="page"></section>
+    <section id="page-upload" class="page"></section>
+  </main>
+
+  <!-- ── Loading Overlay ── -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p id="loading-text" style="font-weight:600;font-size:0.95rem">Processing Environmental Data...</p>
+    </div>
+  </div>
+
+  <!-- ── Toast Notifications ── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
