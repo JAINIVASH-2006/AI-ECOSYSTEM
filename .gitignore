@@ -1,0 +1,51 @@
+# __pycache__
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (keep sample)
+data/raw/*
+data/processed/*
+!data/sample/
+
+# Models
+models/*.pkl
+models/*.joblib
+
+# Outputs
+outputs/maps/*.html
+outputs/reports/*.pdf
+outputs/reports/*.csv
+outputs/predictions/*.csv
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Browser app / secrets / local user data
+frontend/node_modules/
+frontend/dist/
+.env
+.env.*
+!.env.example
+*.db
+*.joblib
+outputs/

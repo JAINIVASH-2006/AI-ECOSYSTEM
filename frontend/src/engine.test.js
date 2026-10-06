@@ -1,0 +1,7 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {scoreZone,classify,simulate,shortlist} from './engine.js';
+const z={zone_id:'TEST',vegetation_index:50,forest_cover:50,soil_degradation:50,slope:30,water_availability:50,rainfall:50,drought_index:50,habitat_quality:50,biodiversity_index:50,human_pressure:50,land_use_change:50};
+test('continuous decimal priority boundaries',()=>{assert.deepEqual([0,25,25.01,50,50.5,75,75.01,100].map(classify),['LOW','LOW','MODERATE','MODERATE','HIGH','HIGH','CRITICAL','CRITICAL']);for(const v of [NaN,-1,101])assert.throws(()=>classify(v))});
+test('score contributions sum to priority score',()=>{const a=scoreZone(z);assert.equal(a.score,50);assert.equal(a.completeness,100);assert.equal(a.drivers.reduce((s,d)=>s+d.contribution,0),50)});
+test('scenario preserves original and unchanged rainfall/slope',()=>{const a=scoreZone(z),b=simulate(a,20);assert.ok(b.score<a.score);assert.equal(a.score,50);assert.equal(b.rainfall,a.rainfall);assert.equal(b.slope,a.slope);assert.equal(simulate(a,0).score,a.score)});
+test('budget caps allocation, excludes incomplete records and has stable ties',()=>{const a=scoreZone({...z,zone_id:'A'}),b=scoreZone({...z,zone_id:'B'}),bad=scoreZone({...z,zone_id:'BAD',rainfall:null});assert.equal(bad.completeness,91);assert.deepEqual(shortlist([b,bad,a],2,2).map(x=>x.zone_id),['A']);assert.equal(shortlist([a],0,2).length,0);assert.throws(()=>shortlist([a],10,0))});

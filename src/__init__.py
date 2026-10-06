@@ -1,0 +1,1 @@
+"""EcoRestore AI — src package."""

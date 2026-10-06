@@ -1,0 +1,1 @@
+{"name":"ecorestore-workspace","private":true,"version":"2.0.0","type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","test":"node --test src/*.test.js"},"dependencies":{"@supabase/supabase-js":"2.117.2"},"devDependencies":{"vite":"8.3.3"}}
